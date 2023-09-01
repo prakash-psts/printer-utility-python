@@ -22,7 +22,7 @@ def home():
 
 @app.route('/process_form', methods=['POST'])
 def process_form():
-    file = request.form.get('file')
+   
     print(request.files["file"])
     pdf_file = request.files["file"]
     destination_folder = "upload/"
