@@ -6,7 +6,6 @@ import sys
 import os
 import win32print
 import win32api
-import requests
 from urllib.parse import quote
 import tempfile
 import shutil
