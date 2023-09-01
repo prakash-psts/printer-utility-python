@@ -78,6 +78,38 @@ def process_form():
     #     response = {'message': 'Some thing went wrong',
     #                 'response': response1.status_code}
 
+
+@app.route('/printer_list', methods=['GET'])
+def printers_list():
+    
+    printer_list = []
+    printers = win32print.EnumPrinters(2)  # 2 means enumerate locally installed printers
+    print(printers)
+    for printer in printers:
+        printer_name = printer[2]        
+        printer_handle=win32print.OpenPrinter(printer_name)      
+        
+        print(win32print.GetPrinter(printer_handle,2)) 
+        print(win32print.PRINTER_ATTRIBUTE_WORK_OFFLINE,"sss")
+        print()
+        
+        printer_info = win32print.GetPrinter(printer_handle,2)
+        if printer_info['Attributes'] & win32print.PRINTER_ATTRIBUTE_WORK_OFFLINE:
+            d='OFFLINE'
+        else:
+            d='ONLINE'
+        printer_status=printer_info['Status']
+        # win32print.PRINTER_STATUS_IO_ACTIVE
+        print(printer_status)               
+        # printer_status_str = status_strings.get(printer_status, "Unknown")
+        printer_dict = {
+            'name': printer_name,
+            'status': printer_status,   
+            'handle':d         
+        }
+        printer_list.append(printer_dict)
+    print(printer_list)    
+    return printer_list
     
 
 
