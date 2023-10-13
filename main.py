@@ -1,14 +1,14 @@
-# from flask import Flask, jsonify
+# # from flask import Flask, jsonify
 
-# app = Flask(__name__)
+# # app = Flask(__name__)
 
-# @app.route('/hello', methods=['GET'])
-# def hello():
-#     return jsonify(message="Hello, API!")
-
-
+# # @app.route('/hello', methods=['GET'])
+# # def hello():
+# #     return jsonify(message="Hello, API!")
 
 
+
+# import subprocess
 # import servicemanager
 # import socket
 # import sys
@@ -17,6 +17,19 @@
 # import win32serviceutil
 
 # # from app import app
+
+# service_name = 'APIService'  # Replace with the actual service name
+# try:
+#     result = subprocess.run(['sc', 'query', service_name], capture_output=True, text=True, check=True)
+#     print("Service is already installed.")
+# except subprocess.CalledProcessError:
+#     # The service doesn't exist, so install it
+#     install_command = ['python', 'main.py', 'install']
+#     try:
+#         install_result = subprocess.run(install_command, capture_output=True, text=True, check=True)
+#         print("Service installed successfully.")
+#     except subprocess.CalledProcessError as e:
+#         print("Error installing the service:", e.stderr)
 
 # class APIService(win32serviceutil.ServiceFramework):
 #     _svc_name_ = 'APIService'
@@ -50,14 +63,13 @@
 #     else:
 #         win32serviceutil.HandleCommandLine(APIService)
 
-from flask import Flask
+# from flask import Flask
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return "Welcome to the homepage!"
+# @app.route('/')
+# def home():
+#     return "Welcome to the homepage!"
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=5000)
