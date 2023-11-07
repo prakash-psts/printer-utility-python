@@ -39,12 +39,19 @@ def process_form():
     else:
         return jsonify({'message': 'An error occurred:', 'response': 'The selected printer does not exist on the device'}), 400
 
-    destination_folder = "upload/"
+    # Get the user's home directory
+    user_home = os.path.expanduser("~")
+
+    # Construct the path to the "Documents" folder
+    documents_folder = os.path.join(user_home, "Documents")
+    destination_folder = f'{documents_folder}//printedFiles/'
+
     if not os.path.exists(destination_folder):
         os.makedirs(destination_folder)
     unique_identifier = str(uuid.uuid4().hex)
     file_extension = ".pdf"
-    new_file_name = f"{destination_folder}/new_file_{unique_identifier}{file_extension}"
+    new_file_name = f"{
+        destination_folder}/new_file_{unique_identifier}{file_extension}"
     pdf_file.save(new_file_name)
 
     try:
@@ -59,12 +66,9 @@ def process_form():
         return jsonify(response), 200
     except Exception as e:
         # print("An error occurred:", )
-        response = {'message': 'An error occurred:', 'response': str(e)}
+        response = {'message': 'An error occurred:',
+                    'response': 'Something went wrong!'}
         return jsonify(response), 400
-
-    # else:
-    #     response = {'message': 'Some thing went wrong',
-    #                 'response': response1.status_code}
 
 
 @app.route('/printer_list', methods=['GET'])
@@ -73,14 +77,11 @@ def printers_list():
     printer_list = []
     # 2 means enumerate locally installed printers
     printers = win32print.EnumPrinters(2)
-    print(printers)
+    # print(printers)
+
     for printer in printers:
         printer_name = printer[2]
         printer_handle = win32print.OpenPrinter(printer_name)
-
-        print(win32print.GetPrinter(printer_handle, 2))
-        print(win32print.PRINTER_ATTRIBUTE_WORK_OFFLINE, "sss")
-        print()
 
         printer_info = win32print.GetPrinter(printer_handle, 2)
         if printer_info['Attributes'] & win32print.PRINTER_ATTRIBUTE_WORK_OFFLINE:
