@@ -1,86 +1,50 @@
-
 import win32serviceutil
 import win32service
+import win32event
 import servicemanager
+import socket
 import sys
-import os
-import os.path
-import multiprocessing
-import subprocess
-from tkinter import messagebox
-
-from flask import Flask, jsonify
-
-# from app import app
+from flask import Flask
 
 app = Flask(__name__)
 
 
-service_name = 'BsmartPrinterService'  # Replace with the actual service name
-# try:
-#     result = subprocess.run(['sc', 'query', service_name],
-#                             capture_output=True, text=True, check=True)
-#     print("Service is already installed.")
-# except subprocess.CalledProcessError:
-#     # The service doesn't exist, so install it
-#     install_command = ['python', 'main.py', 'install']
-#     try:
-#         install_result = subprocess.run(
-#             install_command, capture_output=True, text=True, check=True)
-#         print("Service installed successfully.")
-#     except subprocess.CalledProcessError as e:
-#         print("Error installing the service:", e.stderr)
-#
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
+
+# Define more endpoints as needed
 
 
-def main():
-    messagebox.showinfo("Service installed",
-                        "Please check system tray and click start server")
-    subprocess.check_call(["python", 'gui_app.py'], shell=True)
+class MyService(win32serviceutil.ServiceFramework):
+    _svc_name_ = 'MyService'  # The name of your service
+    _svc_display_name_ = 'My Service'  # The display name of your service
 
-
-class ProcessService(win32serviceutil.ServiceFramework):
-    _svc_name_ = "BsmartPrinterService"
-    _svc_display_name_ = "Bsmart Printer Service"
-    _svc_description_ = "Printer utility"
-    _exe_name_ = sys.executable  # python.exe from venv
-    _exe_args_ = '-u -E "' + os.path.abspath(__file__) + '"'
-
-    proc = None
+    def __init__(self, args):
+        win32serviceutil.ServiceFramework.__init__(self, args)
+        self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
+        self.is_running = True
 
     def SvcStop(self):
         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
-        if self.proc:
-            self.proc.terminate()
-
-    def SvcRun(self):
-        self.proc = multiprocessing.Process(target=main)
-        self.proc.start()
-        self.ReportServiceStatus(win32service.SERVICE_RUNNING)
-        self.SvcDoRun()
-        self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+        win32event.SetEvent(self.hWaitStop)
+        self.is_running = False
 
     def SvcDoRun(self):
-        self.proc.join()
+        servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
+                              servicemanager.PYS_SERVICE_STARTED,
+                              (self._svc_name_, ''))
+        self.main()
 
-
-def start():
-    if len(sys.argv) == 1:
-        import win32traceutil
-        servicemanager.Initialize()
-        servicemanager.PrepareToHostSingle(ProcessService)
-        servicemanager.StartServiceCtrlDispatcher()
-    elif 'start' in sys.argv:
-        main()
-    else:
-        win32serviceutil.HandleCommandLine(ProcessService)
+    def main(self):
+        # Start your Flask API here
+        app.run()
 
 
 if __name__ == '__main__':
-    try:
-        start()
-    except (SystemExit, KeyboardInterrupt):
-        raise
-    except:
-        import traceback
-        traceback.print_exc()
+    if len(sys.argv) == 1:
+        servicemanager.Initialize()
+        servicemanager.PrepareToHostSingle(MyService)
+        servicemanager.StartServiceCtrlDispatcher()
+    else:
+        win32serviceutil.HandleCommandLine(MyService)
