@@ -11,7 +11,9 @@ import tempfile
 import shutil
 import uuid
 import time
-import requests
+import subprocess
+import queue
+import threading
 
 app = Flask(__name__)
 CORS(app, origins='*')
@@ -48,22 +50,26 @@ def process_form():
 
     if not os.path.exists(destination_folder):
         os.makedirs(destination_folder)
+
     unique_identifier = str(uuid.uuid4().hex)
     file_extension = ".pdf"
     new_file_name = f"{
         destination_folder}/new_file_{unique_identifier}{file_extension}"
+    
     pdf_file.save(new_file_name)
 
     try:
         abs_file_path = os.path.abspath(f"{new_file_name}")
-        print_result = print_list_names(abs_file_path, default_printer_name)
+        print_result = print_files(abs_file_path, default_printer_name)
 
         response = {'message': 'File printed', 'response': print_result}
 
-        time.sleep(20)
+        time.sleep(12)
         if os.path.exists(new_file_name):
             os.remove(new_file_name)
+
         return jsonify(response), 200
+
     except Exception as e:
         # print("An error occurred:", )
         response = {'message': 'An error occurred:',
@@ -98,16 +104,16 @@ def printers_list():
             'handle': d
         }
         printer_list.append(printer_dict)
-    print(printer_list)
     return printer_list
 
 
-def print_list_names(file_path, print_name):
+def print_files(file_path, print_name):
+
     # print_name = win32print.GetDefaultPrinter()
 
     printer_handle = win32print.OpenPrinter(print_name)
-
     command = f'PDFtoPrinter "{file_path}" "{print_name}"'
+
     result = win32api.ShellExecute(
         0, "open", "cmd.exe", f"/c {command}", None, 0)
 
@@ -119,7 +125,7 @@ def print_list_names(file_path, print_name):
     #     ".",
     #     0
     # )
-    return result
+    # return result
 
 
 if __name__ == '__main__':
