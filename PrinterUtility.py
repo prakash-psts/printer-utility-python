@@ -1,19 +1,12 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-# import find
-import urllib.parse
-import sys
 import os
 import win32print
 import win32api
 from urllib.parse import quote
-import tempfile
-import shutil
 import uuid
 import time
-import subprocess
-import queue
-import threading
+
 
 app = Flask(__name__)
 CORS(app, origins='*')
@@ -55,7 +48,7 @@ def process_form():
     file_extension = ".pdf"
     new_file_name = f"{
         destination_folder}/new_file_{unique_identifier}{file_extension}"
-    
+
     pdf_file.save(new_file_name)
 
     try:
@@ -71,7 +64,8 @@ def process_form():
         return jsonify(response), 200
 
     except Exception as e:
-        # print("An error occurred:", )
+        if os.path.exists(new_file_name):
+            os.remove(new_file_name)
         response = {'message': 'An error occurred:',
                     'response': 'Something went wrong!'}
         return jsonify(response), 400
