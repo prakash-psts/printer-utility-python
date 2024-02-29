@@ -78,6 +78,9 @@ def printFile():
     pdf_file = request.files.getlist("files")
     default_printer_name = request.form.getlist('printer_names')
 
+    print(pdf_file, 'pdf_file')
+    print(default_printer_name, 'default_printer_name')
+
     try:
         user_home = os.path.expanduser("~")
         documents_folder = os.path.join(user_home, "Documents")
@@ -97,12 +100,13 @@ def printFile():
                     return jsonify({'message': 'An error occurred', 'response': f'The selected printer "{printer_name}" does not exist on the device', 'status_code': 400}), 400
 
                 unique_identifier = str(uuid.uuid4().hex)
-                file_path = f"{destination_folder}\\new_file_{
-                    unique_identifier}.pdf"
-                with open(file_path, "wb") as f:
-                    f.write(file.file.read())
+                file_path = f"{destination_folder}\\new_file_{unique_identifier}.pdf"              
+              
 
-                abs_file_path = os.path.abspath(file_path)
+                with open(file_path, "wb") as f:
+                    f.write(file.read())
+
+                abs_file_path = os.path.abspath(file_path)          
 
                 print_result = print_files(abs_file_path, printer_name)
                 print_response.append(print_result)
@@ -119,7 +123,6 @@ def printFile():
             os.remove(file_path)
         response = {'message': 'An error occurred:',
                     'response': 'Something went wrong!', 'status_code': 400}
-        print(e, "ee")
         return jsonify(response), 400
 
 
